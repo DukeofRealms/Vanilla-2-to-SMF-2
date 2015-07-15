@@ -271,7 +271,7 @@ function loadSettings()
 	}
 	foreach ($convert_data['globals'] as $global)
 		global $$global;
-		
+
     define('PATH_CACHE', 'PATH_CACHE');
 
 	if (!empty($convert_data['eval']))
@@ -2076,7 +2076,7 @@ function doStep2()
 				'name' => 'id_member',
 				'columns' => array('id_member', 'id_msg')),
 				array('no_prefix' => true));
-		if (!isset($indexes['ipIndex']))
+		if (!isset($indexes['ip_index']))
 			$smcFunc['db_add_index']($to_prefix . 'messages', array(
 				'type' => 'INDEX', // no key
 				'name' => 'ip_index',

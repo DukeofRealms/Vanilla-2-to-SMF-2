@@ -18,8 +18,15 @@ TRUNCATE {$to_prefix}members;
 
 ---* {$to_prefix}members
 ---{
+$ignore = true;
 $row['date_registered'] = strtotime($row['date_registered']);
+//no regdate? lets create one..
+if(empty($row['date_registered']))
+    $row['date_registered'] = mktime();
 $row['last_login'] = strtotime($row['last_login']);
+//no last_login
+if(empty($row['last_login']))
+    $row['last_login'] = mktime();
 $row['real_name'] = trim($row['real_name']) == '' ? $row['member_name'] : $row['real_name'];
 ---}
 SELECT
@@ -61,6 +68,7 @@ TRUNCATE {$to_prefix}messages;
 ---* {$to_prefix}topics
 ---{
 $no_add = true;
+$ignore = true;
 
 $row['poster_time'] = strtotime($row['poster_time']);
 $row['modified_time'] = is_null($row['modified_time']) ? 0 : strtotime($row['modified_time']);
@@ -86,7 +94,7 @@ $rows[] = array(
 );
 ---}
 SELECT
-	t.DiscussionID AS id_topic, t.Announce AS is_sticky, t.CategoryID AS id_board, t.InsertUserID AS id_member_started, t.LastCommentUserID AS id_member_updated, t.body, t.CountComments AS num_replies, t.Closed AS locked, fm.name AS poster_name, fm.Email AS poster_email, t.DateInserted AS poster_time, t.name AS subject, fm.name AS modified_name, t.DateUpdated AS modified_time
+	t.DiscussionID AS id_topic, t.Announce AS is_sticky, t.CategoryID AS id_board, t.InsertUserID AS id_member_started, t.LastCommentUserID AS id_member_updated, t.body, t.CountComments AS num_replies, t.Closed AS locked, IFNULL(fm.Name, 'Guest') AS poster_name, IFNULL(fm.Email, 'Unknown') AS poster_email, t.DateInserted AS poster_time, t.name AS subject, fm.name AS modified_name, t.DateUpdated AS modified_time
 FROM {$from_prefix}Discussion AS t
 	LEFT JOIN {$from_prefix}User AS fm ON (t.InsertUserID = fm.UserID);
 ---*
@@ -97,6 +105,8 @@ FROM {$from_prefix}Discussion AS t
 
 ---* {$to_prefix}messages 200
 ---{
+if(empty($row['id_board']))
+	$row['id_board'] = 1;
 $row['poster_time'] = strtotime($row['poster_time']);
 $row['modified_time'] = is_null($row['modified_time']) ? 0 : strtotime($row['modified_time']);
 $row['modified_name'] = is_null($row['modified_name']) ? '' : $row['modified_name'];
@@ -104,7 +114,7 @@ $row['modified_name'] = is_null($row['modified_name']) ? '' : $row['modified_nam
 SELECT
 	p.DiscussionID AS id_topic, t.CategoryID AS id_board,
 	p.DateInserted AS poster_time, p.InsertUserID AS id_member, t.Name AS subject,
-	m.Name AS poster_name, m.Email AS poster_email, '' AS poster_ip,
+	IFNULL(m.Name, 'Guest') AS poster_name, IFNULL(m.Email, 'Unknown') AS poster_email, '' AS poster_ip,
 	p.DateUpdated AS modified_time, m2.Name AS modified_name, p.Body AS body
 FROM {$from_prefix}Comment AS p
 	LEFT JOIN {$from_prefix}Discussion AS t ON (t.DiscussionID = p.DiscussionID)
